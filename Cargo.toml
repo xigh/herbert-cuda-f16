@@ -1,0 +1,44 @@
+[package]
+name = "herbert-cuda-f16"
+version = "0.1.0"
+edition = "2021"
+authors = ["Philippe Anel <philippe@dremml.com>"]
+license = "MIT"
+description = "Qwen3.5 in IEEE f16 on NVIDIA GPUs: every compute kernel is PTX emitted at start-up (fork of herbert-cuda-bf16)"
+
+[lib]
+name = "herbert_cuda"
+path = "src/lib.rs"
+
+[dependencies]
+libloading = "0.8"
+memmap2 = "0.9"
+safetensors = "0.4.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+half = "2.3"
+thiserror = "1.0"
+tokenizers = { version = "0.22.2", default-features = false, features = ["fancy-regex"] }
+# The bench server (feature `serve`), left out of the default build.
+axum = { version = "0.8", optional = true }
+tokio = { version = "1", features = ["rt-multi-thread", "net", "sync"], optional = true }
+tokio-stream = { version = "0.1", optional = true }
+
+[features]
+# herbert-cuda-serve: the Anthropic Messages API over HTTP, for a bench that times every engine with the same client.
+serve = ["dep:axum", "dep:tokio", "dep:tokio-stream"]
+
+[profile.release]
+opt-level = 3
+
+[[bin]]
+name = "herbert-cuda-probe"
+path = "src/bin/herbert-cuda-probe.rs"
+
+[[bin]]
+name = "herbert-cuda-chat"
+path = "src/bin/herbert-cuda-chat.rs"
+
+[[bin]]
+name = "herbert-cuda-serve"
+required-features = ["serve"]
